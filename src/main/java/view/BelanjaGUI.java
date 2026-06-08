@@ -1,5 +1,6 @@
 package view;
 
+//to do:  apply logic in daftar menu
 import javax.swing.*;
 import javax.swing.table.*;
 import java.util.*;
@@ -8,6 +9,8 @@ import model.*;
 public class BelanjaGUI extends JFrame {
   private JTabbedPane tab;
   private List<Item> listMenu;
+  private List<CartItem> listKeranjang;
+  private List<HistoryItem> listRiwayat;
 
   public BelanjaGUI() {
     setSize(900, 600);
@@ -22,7 +25,54 @@ public class BelanjaGUI extends JFrame {
     tab = new JTabbedPane();
     JPanel menuPanel = initMenuPanel();
     tab.addTab("Daftar Menu", menuPanel);
+    JPanel keranjangPanel = initKeranjangPanel();
+    tab.addTab("Keranjang", keranjangPanel);
+    JPanel transaksiPanel = initTransaksiPanel();
+    tab.addTab("Transaksi", transaksiPanel);
+    JPanel riwayatPanel = initRiwayatPanel();
+    tab.addTab("Riwayat", riwayatPanel);
+  }
 
+  private JPanel initRiwayatPanel() {
+    JPanel rp = new JPanel();
+    rp.setLayout(null);
+    JButton bRefresh = new JButton("Refresh");
+    DefaultTableModel tModel = new DefaultTableModel(new String[] { "Waktu", "Total (Rp)", "Jumlah Item" }, 0);
+    JTable tRiwayat = new JTable(tModel);
+    rp.add(bRefresh);
+    rp.add(tRiwayat);
+    return rp;
+  }
+
+  private JPanel initTransaksiPanel() {
+    JPanel tp = new JPanel();
+    tp.setLayout(null);
+    JLabel lBayar = new JLabel("Jumlah Bayar (Rp):");
+    JLabel lKembali = new JLabel("Kembalian (Rp): -");
+    JTextField tfInput = new JTextField();
+    JButton bBayar = new JButton("Proses Pembayaran");
+    tp.add(lBayar);
+    tp.add(lKembali);
+    tp.add(tfInput);
+    tp.add(bBayar);
+    return tp;
+  }
+
+  private JPanel initKeranjangPanel() {
+    listKeranjang = new ArrayList<>();
+    JPanel kp = new JPanel();
+    kp.setLayout(null);
+    JLabel lTotal = new JLabel("Total: Rp-");
+    JButton bHapusItem = new JButton("Hapus Item");
+    JButton bKosongkan = new JButton("Kosongkan");
+    DefaultTableModel tModel = new DefaultTableModel(
+        new String[] { "Nama", "Kategori", "Harga Satuan", "Qty", "Subtotal" }, 0);
+    JTable tKeranjang = new JTable(tModel);
+    kp.add(lTotal);
+    kp.add(bHapusItem);
+    kp.add(bKosongkan);
+    kp.add(tKeranjang);
+    return kp;
   }
 
   private JPanel initMenuPanel() {
@@ -38,10 +88,15 @@ public class BelanjaGUI extends JFrame {
     JSpinner sqty = new JSpinner();
     DefaultTableModel tModel = new DefaultTableModel(new String[] { "Nama", "Kategori", "Harga", "Stok" }, 0);
     JTable tMenu = new JTable(tModel);
-    JComboBox<String> cbPilihan = new JComboBox<>();
-    for (Item t : listMenu) {
-      cbPilihan.addItem(t.getNama());
-    }
+    mp.add(lCari);
+    mp.add(tfCari);
+    mp.add(bHargaMenurun);
+    mp.add(bHargaMenaik);
+    mp.add(bNamaMenurun);
+    mp.add(bNamaMenaik);
+    mp.add(lqty);
+    mp.add(sqty);
+    mp.add(tMenu);
     return mp;
   }
 }
