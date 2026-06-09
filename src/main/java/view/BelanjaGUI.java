@@ -3,6 +3,8 @@ package view;
 //to do:  apply logic in daftar menu
 import javax.swing.*;
 import javax.swing.table.*;
+
+import java.awt.event.*;
 import java.util.*;
 import model.*;
 
@@ -11,15 +13,44 @@ public class BelanjaGUI extends JFrame {
   private List<Item> listMenu;
   private List<CartItem> listKeranjang;
   private List<HistoryItem> listRiwayat;
+  private int width;
+  private int height;
 
-  public BelanjaGUI() {
-    setSize(900, 600);
-    setResizable(false);
+  public BelanjaGUI(int w, int h) {
+    width = w;
+    height = h;
+    setSize(width, height);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     initComponents();
     setLayout(null);
+    setComponentsLogic();
+  }
+
+  private void setComponentsLogic() {
+    addComponentListener(new ComponentListener() {
+      public void componentResized(ComponentEvent e) {
+        width = getWidth();
+        height = getHeight();
+        setComponentsSize();
+      }
+
+      public void componentShown(ComponentEvent e) {
+      }
+
+      public void componentMoved(ComponentEvent e) {
+      }
+
+      public void componentHidden(ComponentEvent e) {
+      }
+    });
+  }
+
+  private void setComponentsSize() {
+    tab.setBounds(0, 0, width - 50, height - 100);
   }
 
   private void initComponents() {
+    listMenu = new ArrayList<>();
     listMenu.add(new Makanan("Ayam Geprek", 10000, 20));
     listMenu.add(new Minuman("Teh Jeruk", 4000, 15));
     tab = new JTabbedPane();
@@ -31,6 +62,8 @@ public class BelanjaGUI extends JFrame {
     tab.addTab("Transaksi", transaksiPanel);
     JPanel riwayatPanel = initRiwayatPanel();
     tab.addTab("Riwayat", riwayatPanel);
+    tab.setBounds(0, 0, width - 50, height - 100);
+    add(tab);
   }
 
   private JPanel initRiwayatPanel() {

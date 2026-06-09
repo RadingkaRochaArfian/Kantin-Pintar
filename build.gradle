@@ -1,1 +1,7 @@
-plugins{id 'java'}
+plugins{
+  id 'java'
+  id 'application'
+}
+application{
+  mainClass='KantinPintar'
+}
