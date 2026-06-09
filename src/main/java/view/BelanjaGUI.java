@@ -55,6 +55,7 @@ public class BelanjaGUI extends JFrame {
     initComponents();
     setLayout(null);
     setComponentsLogic();
+    setComponentsBounds();
   }
 
   private void setComponentsLogic() {
@@ -82,6 +83,7 @@ public class BelanjaGUI extends JFrame {
   }
 
   private void setMenuBounds() {
+    lCari.setBounds(10, -30, 100, 100);
   }
 
   private void initComponents() {
