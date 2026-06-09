@@ -5,6 +5,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import java.awt.event.*;
+import java.awt.Component;
 import java.util.*;
 import model.*;
 
@@ -15,6 +16,36 @@ public class BelanjaGUI extends JFrame {
   private List<HistoryItem> listRiwayat;
   private int width;
   private int height;
+  JPanel mp;
+  JLabel lCari;
+  JTextField tfCari;
+  JButton bHargaMenurun;
+  JButton bHargaMenaik;
+  JButton bNamaMenurun;
+  JButton bNamaMenaik;
+  JLabel lqty;
+  JSpinner sqty;
+  JButton bTambah;
+  DefaultTableModel tModelMenu;
+  JTable tMenu;
+
+  JPanel kp;
+  JLabel lTotal;
+  JButton bHapusItem;
+  JButton bKosongkan;
+  DefaultTableModel tModelKeranjang;
+  JTable tKeranjang;
+
+  JPanel tp;
+  JLabel lBayar;
+  JLabel lKembali;
+  JTextField tfInput;
+  JButton bBayar;
+
+  JPanel rp;
+  JButton bRefresh;
+  DefaultTableModel tModelRiwayat;
+  JTable tRiwayat;
 
   public BelanjaGUI(int w, int h) {
     width = w;
@@ -31,7 +62,7 @@ public class BelanjaGUI extends JFrame {
       public void componentResized(ComponentEvent e) {
         width = getWidth();
         height = getHeight();
-        setComponentsSize();
+        setComponentsBounds();
       }
 
       public void componentShown(ComponentEvent e) {
@@ -45,8 +76,12 @@ public class BelanjaGUI extends JFrame {
     });
   }
 
-  private void setComponentsSize() {
-    tab.setBounds(0, 0, width - 50, height - 100);
+  private void setComponentsBounds() {
+    tab.setBounds(0, 0, width, height);
+    setMenuBounds();
+  }
+
+  private void setMenuBounds() {
   }
 
   private void initComponents() {
@@ -62,28 +97,27 @@ public class BelanjaGUI extends JFrame {
     tab.addTab("Transaksi", transaksiPanel);
     JPanel riwayatPanel = initRiwayatPanel();
     tab.addTab("Riwayat", riwayatPanel);
-    tab.setBounds(0, 0, width - 50, height - 100);
     add(tab);
   }
 
   private JPanel initRiwayatPanel() {
-    JPanel rp = new JPanel();
+    rp = new JPanel();
     rp.setLayout(null);
-    JButton bRefresh = new JButton("Refresh");
-    DefaultTableModel tModel = new DefaultTableModel(new String[] { "Waktu", "Total (Rp)", "Jumlah Item" }, 0);
-    JTable tRiwayat = new JTable(tModel);
+    bRefresh = new JButton("Refresh");
+    tModelRiwayat = new DefaultTableModel(new String[] { "Waktu", "Total (Rp)", "Jumlah Item" }, 0);
+    tRiwayat = new JTable(tModelRiwayat);
     rp.add(bRefresh);
     rp.add(tRiwayat);
     return rp;
   }
 
   private JPanel initTransaksiPanel() {
-    JPanel tp = new JPanel();
+    tp = new JPanel();
     tp.setLayout(null);
-    JLabel lBayar = new JLabel("Jumlah Bayar (Rp):");
-    JLabel lKembali = new JLabel("Kembalian (Rp): -");
-    JTextField tfInput = new JTextField();
-    JButton bBayar = new JButton("Proses Pembayaran");
+    lBayar = new JLabel("Jumlah Bayar (Rp):");
+    lKembali = new JLabel("Kembalian (Rp): -");
+    tfInput = new JTextField();
+    bBayar = new JButton("Proses Pembayaran");
     tp.add(lBayar);
     tp.add(lKembali);
     tp.add(tfInput);
@@ -93,14 +127,14 @@ public class BelanjaGUI extends JFrame {
 
   private JPanel initKeranjangPanel() {
     listKeranjang = new ArrayList<>();
-    JPanel kp = new JPanel();
+    kp = new JPanel();
     kp.setLayout(null);
-    JLabel lTotal = new JLabel("Total: Rp-");
-    JButton bHapusItem = new JButton("Hapus Item");
-    JButton bKosongkan = new JButton("Kosongkan");
-    DefaultTableModel tModel = new DefaultTableModel(
+    lTotal = new JLabel("Total: Rp-");
+    bHapusItem = new JButton("Hapus Item");
+    bKosongkan = new JButton("Kosongkan");
+    tModelKeranjang = new DefaultTableModel(
         new String[] { "Nama", "Kategori", "Harga Satuan", "Qty", "Subtotal" }, 0);
-    JTable tKeranjang = new JTable(tModel);
+    tKeranjang = new JTable(tModelKeranjang);
     kp.add(lTotal);
     kp.add(bHapusItem);
     kp.add(bKosongkan);
@@ -109,18 +143,19 @@ public class BelanjaGUI extends JFrame {
   }
 
   private JPanel initMenuPanel() {
-    JPanel mp = new JPanel();
+    mp = new JPanel();
     mp.setLayout(null);
-    JLabel lCari = new JLabel("Cari:");
-    JTextField tfCari = new JTextField();
-    JButton bHargaMenurun = new JButton("Harga <Desc>");
-    JButton bHargaMenaik = new JButton("Harga <Asc>");
-    JButton bNamaMenurun = new JButton("Nama <Desc>");
-    JButton bNamaMenaik = new JButton("Nama <Asc>");
-    JLabel lqty = new JLabel("Qty:");
-    JSpinner sqty = new JSpinner();
-    DefaultTableModel tModel = new DefaultTableModel(new String[] { "Nama", "Kategori", "Harga", "Stok" }, 0);
-    JTable tMenu = new JTable(tModel);
+    lCari = new JLabel("Cari:");
+    tfCari = new JTextField();
+    bHargaMenurun = new JButton("Harga <Desc>");
+    bHargaMenaik = new JButton("Harga <Asc>");
+    bNamaMenurun = new JButton("Nama <Desc>");
+    bNamaMenaik = new JButton("Nama <Asc>");
+    lqty = new JLabel("Qty:");
+    sqty = new JSpinner();
+    bTambah = new JButton("Tambah ke Keranjang");
+    tModelMenu = new DefaultTableModel(new String[] { "Nama", "Kategori", "Harga", "Stok" }, 0);
+    tMenu = new JTable(tModelMenu);
     mp.add(lCari);
     mp.add(tfCari);
     mp.add(bHargaMenurun);
@@ -129,6 +164,7 @@ public class BelanjaGUI extends JFrame {
     mp.add(bNamaMenaik);
     mp.add(lqty);
     mp.add(sqty);
+    mp.add(bTambah);
     mp.add(tMenu);
     return mp;
   }
