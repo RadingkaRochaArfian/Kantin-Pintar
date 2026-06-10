@@ -57,8 +57,19 @@ public class BelanjaGUI extends JFrame {
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     initComponents();
     setLayout(null);
-    setComponentsLogic();
     setComponentsBounds();
+    setComponentsLogic();
+    setWindowLogic();
+  }
+
+  private void setWindowLogic() {
+    addWindowStateListener(new WindowStateListener() {
+      public void windowStateChanged(WindowEvent e) {
+        if ((e.getNewState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH) {
+          setComponentsBounds();
+        }
+      }
+    });
   }
 
   private void setComponentsLogic() {
@@ -91,10 +102,9 @@ public class BelanjaGUI extends JFrame {
     int rAll = (int) Math.round((1.0 * pWidth / DEFAULT_WIDTH) * (1.0 * pHeight / DEFAULT_HEIGHT));
     int rHeight = (int) Math.round((1.0 * pHeight / DEFAULT_HEIGHT));
     int rWidth = (int) Math.round((1.0 * pWidth / DEFAULT_WIDTH));
-    int lCariY = (int) Math.round(pHeight * (-30));
+    int lCariY = (int) Math.round(rHeight * -30);
     lCari.setBounds(10, lCariY, pWidth / 8, pHeight / 6);
-    lCari.setFont(new Font("Arial", Font.BOLD, (int) Math.round(rAll * 13)));
-    tfCari.setBounds(130, -30, 100, 100);
+    lCari.setFont(new Font("Arial", Font.BOLD, (int) Math.round(rAll * 12)));
   }
 
   private void initComponents() {
