@@ -6,10 +6,13 @@ import javax.swing.table.*;
 
 import java.awt.event.*;
 import java.awt.Component;
+import java.awt.Font;
 import java.util.*;
 import model.*;
 
 public class BelanjaGUI extends JFrame {
+  private final int DEFAULT_WIDTH = 800;
+  private final int DEFAULT_HEIGHT = 600;
   private JTabbedPane tab;
   private List<Item> listMenu;
   private List<CartItem> listKeranjang;
@@ -83,7 +86,15 @@ public class BelanjaGUI extends JFrame {
   }
 
   private void setMenuBounds() {
-    lCari.setBounds(10, -30, 100, 100);
+    int pHeight = mp.getHeight();
+    int pWidth = mp.getWidth();
+    int rAll = (int) Math.round((1.0 * pWidth / DEFAULT_WIDTH) * (1.0 * pHeight / DEFAULT_HEIGHT));
+    int rHeight = (int) Math.round((1.0 * pHeight / DEFAULT_HEIGHT));
+    int rWidth = (int) Math.round((1.0 * pWidth / DEFAULT_WIDTH));
+    int lCariY = (int) Math.round(pHeight * (-30));
+    lCari.setBounds(10, lCariY, pWidth / 8, pHeight / 6);
+    lCari.setFont(new Font("Arial", Font.BOLD, (int) Math.round(rAll * 13)));
+    tfCari.setBounds(130, -30, 100, 100);
   }
 
   private void initComponents() {
