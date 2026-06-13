@@ -21,8 +21,8 @@ import model.*;
 public class BelanjaGUI extends JFrame {
   private final int DEFAULT_WIDTH = 800;
   private final int DEFAULT_HEIGHT = 600;
-  private final String MENU_FILE_PATH = "bin/Menu.csv";
-  private final String STRUCT_FILE_PATH = "bin/Struct.txt";
+  private final String MENU_FILE_PATH = "data/Menu.csv";
+  private final String STRUCT_FILE_PATH = "data/Struct.txt";
   private JTabbedPane tab;
   private List<Item> listMenu;
   private List<CartItem> listKeranjang;
@@ -163,10 +163,23 @@ public class BelanjaGUI extends JFrame {
 
   private void setListMenu() {
     Path fileMenu = Paths.get(MENU_FILE_PATH);
-    listMenu.add(new Makanan("Ayam Geprek", 10000, 20));
-    listMenu.add(new Minuman("Teh Jeruk", 4000, 15));
-    listMenu.add(new Minuman("Tahu Telor", 8000, 24));
+    try {
+      List<String> lines = Files.readAllLines(fileMenu);
+      for (String s : lines) {
+        String[] line = s.split(",");
+        String nama = line[0];
+        int harga = Integer.parseInt(line[1]);
+        int stok = Integer.parseInt(line[2]);
+        String kategori = line[3];
+        if (kategori.equalsIgnoreCase("Makanan"))
+          listMenu.add(new Makanan(nama, harga, stok));
+        else
+          listMenu.add(new Minuman(nama, harga, stok));
 
+      }
+    } catch (Exception e) {
+      JOptionPane.showMessageDialog(this, e.getMessage());
+    }
   }
 
   private JPanel initRiwayatPanel() {
