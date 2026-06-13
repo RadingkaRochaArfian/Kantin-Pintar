@@ -173,7 +173,7 @@ public class BelanjaGUI extends JFrame {
         String kategori = line[3];
         if (kategori.equalsIgnoreCase("Makanan"))
           listMenu.add(new Makanan(nama, harga, stok));
-        else
+        else if (kategori.equalsIgnoreCase("Minuman"))
           listMenu.add(new Minuman(nama, harga, stok));
 
       }
