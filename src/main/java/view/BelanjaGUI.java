@@ -139,8 +139,7 @@ public class BelanjaGUI extends JFrame {
 
   private void initComponents() {
     listMenu = new ArrayList<>();
-    listMenu.add(new Makanan("Ayam Geprek", 10000, 20));
-    listMenu.add(new Minuman("Teh Jeruk", 4000, 15));
+    setListMenu();
     tab = new JTabbedPane();
     JPanel menuPanel = initMenuPanel();
     tab.addTab("Daftar Menu", menuPanel);
@@ -151,6 +150,12 @@ public class BelanjaGUI extends JFrame {
     JPanel riwayatPanel = initRiwayatPanel();
     tab.addTab("Riwayat", riwayatPanel);
     add(tab);
+  }
+  private void setListMenu(){
+    listMenu.add(new Makanan("Ayam Geprek", 10000, 20));
+    listMenu.add(new Minuman("Teh Jeruk", 4000, 15));
+    listMenu.add(new Minuman("Tahu Telor", 8000, 24));
+    
   }
 
   private JPanel initRiwayatPanel() {
@@ -201,6 +206,12 @@ public class BelanjaGUI extends JFrame {
     tModelMenu = new DefaultTableModel(new String[] { "Nama", "Kategori", "Harga", "Stok" }, 0);
     tMenu = new JTable(tModelMenu);
     spMenu=new JScrollPane(tMenu);
+    addMenu();
     return mp;
+  }
+  private void addMenu(){
+    for(Item i:listMenu){
+      tModelMenu.addRow(new Object[]{i.getNama(),i.getKategori(),i.getHarga(),i.getStok()});
+    }
   }
 }
