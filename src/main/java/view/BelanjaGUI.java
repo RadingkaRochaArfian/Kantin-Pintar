@@ -3,17 +3,16 @@ package view;
 //to do:  apply logic in daftar menu
 import java.nio.file.*;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.*;
 
-import java.awt.event.*;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.util.*;
 import model.*;
@@ -72,6 +71,80 @@ public class BelanjaGUI extends JFrame {
     setMinimumSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
     initComponents();
     setComponentsBounds();
+    setComponentsLogic();
+  }
+
+  private void setComponentsLogic() {
+    setMenuLogic();
+  }
+
+  private void setMenuLogic() {
+    bHargaMenurun.addActionListener(e -> {
+      sortMenu("harga", false);
+    });
+    bHargaMenaik.addActionListener(e -> {
+      sortMenu("harga", true);
+    });
+    bNamaMenurun.addActionListener(e -> {
+      sortMenu("nama", false);
+    });
+    bNamaMenaik.addActionListener(e -> {
+      sortMenu("nama", true);
+    });
+    tfCari.getDocument().addDocumentListener(new DocumentListener() {
+      public void insertUpdate(DocumentEvent e) {
+        refreshTMenu();
+      }
+
+      public void removeUpdate(DocumentEvent e) {
+        refreshTMenu();
+      }
+
+      public void changedUpdate(DocumentEvent e) {
+        refreshTMenu();
+      }
+    });
+  }
+
+  private void sortMenu(String kategori, boolean ascending) {
+    listMenu.sort((item1, item2) -> {
+      int comparison = 0;
+      if (kategori.equalsIgnoreCase("nama")) {
+        comparison = item1.getNama().compareToIgnoreCase(item2.getNama());
+      } else if (kategori.equalsIgnoreCase("harga")) {
+        comparison = Integer.compare(item1.getHarga(), item2.getHarga());
+      }
+      return ascending ? comparison : -comparison;
+    });
+    refreshTMenu();
+  }
+
+  private void refreshTMenu() {
+    String keyword = tfCari.getText().toLowerCase().trim();
+    tModelMenu.setRowCount(0);
+    if (keyword.isEmpty()) {
+      for (Item i : listMenu) {
+        tModelMenu.addRow(new Object[] {
+            i.getNama(),
+            i.getKategori(),
+            i.getHarga(),
+            i.getStok()
+        });
+      }
+      return;
+    }
+    for (Item i : listMenu) {
+      String name = i.getNama().toLowerCase();
+      String kategori = i.getKategori().toLowerCase();
+      if (name.contains(keyword) || kategori.contains(keyword)) {
+        tModelMenu.addRow(new Object[] {
+            i.getNama(),
+            i.getKategori(),
+            i.getHarga(),
+            i.getStok()
+        });
+      }
+    }
   }
 
   private void setComponentsBounds() {
