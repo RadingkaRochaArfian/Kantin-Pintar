@@ -1,5 +1,6 @@
 package view;
 
+import java.nio.charset.StandardCharsets;
 //to do:  apply logic in daftar menu
 import java.nio.file.*;
 import javax.swing.*;
@@ -21,6 +22,7 @@ public class BelanjaGUI extends JFrame {
   private final int DEFAULT_WIDTH = 800;
   private final int DEFAULT_HEIGHT = 600;
   private final String MENU_FILE_PATH = "data/Menu.csv";
+  private final String CART_FILE_PATH = "data/Cart.csv";
   private final String STRUCT_FILE_PATH = "data/Struct.txt";
   private JTabbedPane tab;
   private List<Item> listMenu;
@@ -35,8 +37,8 @@ public class BelanjaGUI extends JFrame {
   JButton bHargaMenaik;
   JButton bNamaMenurun;
   JButton bNamaMenaik;
-  JLabel lqty;
-  JSpinner sqty;
+  JLabel lQty;
+  JSpinner sQty;
   JButton bTambah;
   DefaultTableModel tModelMenu;
   JTable tMenu;
@@ -104,6 +106,124 @@ public class BelanjaGUI extends JFrame {
         refreshTMenu();
       }
     });
+    bTambah.addActionListener(e -> {
+      int selRow = tMenu.getSelectedRow();
+      if (selRow == -1) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Please choose an Item from the menu table first!",
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
+      }
+      int modelRow = tMenu.convertColumnIndexToModel(selRow);
+      Item selItem = listMenu.get(modelRow);
+      int qty = (int) sQty.getValue();
+      if (selItem.getStok() <= 0) {
+        JOptionPane.showMessageDialog(
+            this,
+            "We are sorry! " + selItem.getNama() + " is out of stock!",
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+      if (qty > selItem.getStok()) {
+        JOptionPane.showMessageDialog(
+            this,
+            "We are sorry! " + selItem.getNama() + " doesn't have enough stock!",
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
+      }
+      selItem.setStok(selItem.getStok() - qty);
+      refreshTMenu();
+      boolean itemFlag = false;
+      for (CartItem ci : listKeranjang) {
+        if (ci.getItem().getId().equals(selItem.getId())) {
+          ci.setQuantity(ci.getQuantity() + qty);
+          itemFlag = true;
+          break;
+        }
+      }
+      if (!itemFlag) {
+        listKeranjang.add(new CartItem(selItem, qty));
+      }
+      refreshTKeranjang();
+      refreshMenuFilePath();
+      refreshCartFilePath();
+      JOptionPane.showMessageDialog(
+          this,
+          qty + " " + selItem.getNama() + " is successfully added to cart!",
+          "Success",
+          JOptionPane.INFORMATION_MESSAGE);
+    });
+  }
+  private void refreshCartFilePath(){
+    try{
+      List<String>lines=new ArrayList<>();
+      for(CartItem ci:listKeranjang){
+        lines.add(
+          ci.getItem().getId()+","+
+          String.valueOf(ci.getQuantity())
+        );
+      }
+      Files.write(
+        Paths.get(CART_FILE_PATH),
+        lines,
+        StandardCharsets.UTF_8,
+        StandardOpenOption.TRUNCATE_EXISTING
+      );
+    }catch(Exception e){
+      JOptionPane.showMessageDialog(
+        this,
+        "Failed to save cart file.",
+        "Error",
+        JOptionPane.ERROR_MESSAGE
+      );
+    }
+  }
+
+  private void refreshMenuFilePath() {
+    try{
+      List<String> lines=new ArrayList<>();
+      for(Item i:listMenu){
+        String category=i instanceof Makanan?"Makanan":"Minuman";
+        lines.add(
+          i.getNama()+","+
+          i.getHarga()+","+
+          i.getStok()+","+
+          category
+        );
+      }
+      Files.write(
+        Paths.get(MENU_FILE_PATH),
+        lines,
+        StandardCharsets.UTF_8,
+        StandardOpenOption.TRUNCATE_EXISTING
+      );
+    }catch(Exception e){
+      JOptionPane.showMessageDialog(
+        this,
+        "Failed to save menu file.",
+        "Error",
+        JOptionPane.ERROR_MESSAGE
+      );
+    }
+  }
+
+  private void refreshTKeranjang() {
+    tModelKeranjang.setRowCount(0);
+    int total = 0;
+    for (CartItem ci : listKeranjang) {
+      int subTotal = ci.getItem().getHarga() * ci.getQuantity();
+      total += subTotal;
+      tModelKeranjang.addRow(new Object[] {
+          ci.getItem().getNama(),
+          ci.getItem().getKategori(),
+          ci.getItem().getHarga(),
+          ci.getQuantity(),
+          subTotal
+      });
+    }
+    lTotal.setText("Total: Rp" + total);
   }
 
   private void sortMenu(String kategori, boolean ascending) {
@@ -213,14 +333,15 @@ public class BelanjaGUI extends JFrame {
     pUpper.add(bNamaMenaik);
     JPanel pBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
     mp.add(pBottom, BorderLayout.SOUTH);
-    pBottom.add(lqty);
-    pBottom.add(sqty);
+    pBottom.add(lQty);
+    pBottom.add(sQty);
     pBottom.add(bTambah);
     mp.add(spMenu, BorderLayout.CENTER);
   }
 
   private void initComponents() {
     listMenu = new ArrayList<>();
+    listKeranjang=new ArrayList<>();
     setListMenu();
     tab = new JTabbedPane();
     JPanel menuPanel = initMenuPanel();
@@ -232,6 +353,7 @@ public class BelanjaGUI extends JFrame {
     JPanel riwayatPanel = initRiwayatPanel();
     tab.addTab("Riwayat", riwayatPanel);
     add(tab);
+    setListKeranjang();
   }
 
   private void setListMenu() {
@@ -277,7 +399,6 @@ public class BelanjaGUI extends JFrame {
   }
 
   private JPanel initKeranjangPanel() {
-    listKeranjang = new ArrayList<>();
     kp = new JPanel();
     lTotal = new JLabel("Total: Rp-");
     bHapusItem = new JButton("Hapus Item");
@@ -286,6 +407,7 @@ public class BelanjaGUI extends JFrame {
         new String[] { "Nama", "Kategori", "Harga Satuan", "Qty", "Subtotal" }, 0);
     tKeranjang = new JTable(tModelKeranjang);
     spKeranjang = new JScrollPane(tKeranjang);
+    addCart();
     return kp;
   }
 
@@ -297,8 +419,8 @@ public class BelanjaGUI extends JFrame {
     bHargaMenaik = new JButton("Harga <Asc>");
     bNamaMenurun = new JButton("Nama <Desc>");
     bNamaMenaik = new JButton("Nama <Asc>");
-    lqty = new JLabel("Qty:");
-    sqty = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+    lQty = new JLabel("Qty:");
+    sQty = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
     bTambah = new JButton("Tambah ke Keranjang");
     tModelMenu = new DefaultTableModel(new String[] { "Nama", "Kategori", "Harga", "Stok" }, 0);
     tMenu = new JTable(tModelMenu);
@@ -310,6 +432,42 @@ public class BelanjaGUI extends JFrame {
   private void addMenu() {
     for (Item i : listMenu) {
       tModelMenu.addRow(new Object[] { i.getNama(), i.getKategori(), i.getHarga(), i.getStok() });
+    }
+  }
+  private void addCart(){
+    for (CartItem ci:listKeranjang){
+      tModelKeranjang.addRow(new Object[]{
+        ci.getItem().getNama(),
+        ci.getItem().getKategori(),
+        ci.getItem().getHarga(),
+        ci.getQuantity(),
+        ci.getItem().getHarga()*ci.getQuantity()
+      });
+    }
+  }
+  private void setListKeranjang(){
+    Path fileCart=Paths.get(CART_FILE_PATH); 
+    try{
+      List<String> lines=Files.readAllLines(fileCart);
+      for(String s:lines){
+        String[]line=s.split(",");
+        String id=line[0];
+        int qty=Integer.parseInt(line[1]);
+        for(Item i:listMenu){
+          if(i.getId().equals(id)){
+            listKeranjang.add(new CartItem(i, qty));
+            break;
+          }
+        }
+      }
+      refreshTKeranjang();
+    }catch(Exception e){
+      JOptionPane.showMessageDialog(
+        this,
+        "Failed to load cart file",
+        "Error",
+        JOptionPane.ERROR_MESSAGE
+      );
     }
   }
 }

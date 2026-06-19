@@ -9,6 +9,10 @@ public class CartItem {
     qty = iQty;
   }
 
+  public void setQuantity(int iQty) {
+    qty = iQty;
+  }
+
   public Item getItem() {
     return item;
   }
