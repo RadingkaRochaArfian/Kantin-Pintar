@@ -78,6 +78,68 @@ public class BelanjaGUI extends JFrame {
 
   private void setComponentsLogic() {
     setMenuLogic();
+    setKeranjangLogic();
+  }
+
+  private void setKeranjangLogic() {
+    bHapusItem.addActionListener(e -> {
+      int selRow = tKeranjang.getSelectedRow();
+      if (selRow == -1) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Please choose an Item fom the cart table first!",
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+      int modelRow = tKeranjang.convertColumnIndexToModel(selRow);
+      CartItem selCartItem = listKeranjang.get(modelRow);
+      for (int i = 0; i < listKeranjang.size(); i++) {
+        if (listKeranjang.get(i).getItem().getId().equals(selCartItem.getItem().getId())) {
+          listKeranjang.remove(i);
+          break;
+        }
+      }
+      for (Item i : listMenu) {
+        if (i.getId().equals(selCartItem.getItem().getId())) {
+          i.setStok(i.getStok() + selCartItem.getQuantity());
+          break;
+        }
+      }
+      refreshCartFilePath(selCartItem);
+      refreshTKeranjang();
+      refreshMenuFilePath();
+      refreshTMenu();
+      JOptionPane.showMessageDialog(
+          this,
+          selCartItem.getQuantity() + " " + selCartItem.getItem().getNama() + " is successfully removed!",
+          "Success",
+          JOptionPane.INFORMATION_MESSAGE);
+    });
+    bKosongkan.addActionListener(e -> {
+      for (CartItem ci : listKeranjang) {
+        for (Item i : listMenu) {
+          if (i.getId().equals(ci.getItem().getId())) {
+            i.setStok(i.getStok() + ci.getQuantity());
+            break;
+          }
+        }
+      }
+      listKeranjang.clear();
+      refreshCartFilePath();
+      refreshTKeranjang();
+      refreshMenuFilePath();
+      refreshTMenu();
+      JOptionPane.showMessageDialog(
+          this,
+          "Successfully clear cart!",
+          "Success",
+          JOptionPane.INFORMATION_MESSAGE);
+    });
+  }
+
+  private void refreshCartFilePath() {
+    refreshCartFilePath(null);
   }
 
   private void setMenuLogic() {
@@ -114,6 +176,7 @@ public class BelanjaGUI extends JFrame {
             "Please choose an Item from the menu table first!",
             "Error",
             JOptionPane.ERROR_MESSAGE);
+        return;
       }
       int modelRow = tMenu.convertColumnIndexToModel(selRow);
       Item selItem = listMenu.get(modelRow);
@@ -156,56 +219,53 @@ public class BelanjaGUI extends JFrame {
           JOptionPane.INFORMATION_MESSAGE);
     });
   }
-  private void refreshCartFilePath(){
-    try{
-      List<String>lines=new ArrayList<>();
-      for(CartItem ci:listKeranjang){
+
+  private void refreshCartFilePath(CartItem exCI) {
+    try {
+      List<String> lines = new ArrayList<>();
+      for (CartItem ci : listKeranjang) {
+        if (exCI != null && ci.getItem().getId().equals(exCI.getItem().getId()))
+          continue;
         lines.add(
-          ci.getItem().getId()+","+
-          String.valueOf(ci.getQuantity())
-        );
+            ci.getItem().getId() + "," +
+                String.valueOf(ci.getQuantity()));
       }
       Files.write(
-        Paths.get(CART_FILE_PATH),
-        lines,
-        StandardCharsets.UTF_8,
-        StandardOpenOption.TRUNCATE_EXISTING
-      );
-    }catch(Exception e){
+          Paths.get(CART_FILE_PATH),
+          lines,
+          StandardCharsets.UTF_8,
+          StandardOpenOption.TRUNCATE_EXISTING);
+    } catch (Exception e) {
       JOptionPane.showMessageDialog(
-        this,
-        "Failed to save cart file.",
-        "Error",
-        JOptionPane.ERROR_MESSAGE
-      );
+          this,
+          "Failed to save cart file.",
+          "Error",
+          JOptionPane.ERROR_MESSAGE);
     }
   }
 
   private void refreshMenuFilePath() {
-    try{
-      List<String> lines=new ArrayList<>();
-      for(Item i:listMenu){
-        String category=i instanceof Makanan?"Makanan":"Minuman";
+    try {
+      List<String> lines = new ArrayList<>();
+      for (Item i : listMenu) {
+        String category = i instanceof Makanan ? "Makanan" : "Minuman";
         lines.add(
-          i.getNama()+","+
-          i.getHarga()+","+
-          i.getStok()+","+
-          category
-        );
+            i.getNama() + "," +
+                i.getHarga() + "," +
+                i.getStok() + "," +
+                category);
       }
       Files.write(
-        Paths.get(MENU_FILE_PATH),
-        lines,
-        StandardCharsets.UTF_8,
-        StandardOpenOption.TRUNCATE_EXISTING
-      );
-    }catch(Exception e){
+          Paths.get(MENU_FILE_PATH),
+          lines,
+          StandardCharsets.UTF_8,
+          StandardOpenOption.TRUNCATE_EXISTING);
+    } catch (Exception e) {
       JOptionPane.showMessageDialog(
-        this,
-        "Failed to save menu file.",
-        "Error",
-        JOptionPane.ERROR_MESSAGE
-      );
+          this,
+          "Failed to save menu file.",
+          "Error",
+          JOptionPane.ERROR_MESSAGE);
     }
   }
 
@@ -270,7 +330,7 @@ public class BelanjaGUI extends JFrame {
   private void setComponentsBounds() {
     add(tab, BorderLayout.CENTER);
     setMenuBounds();
-    setKerangjangBounds();
+    setKeranjangBounds();
     setTransaksiBounds();
     setRiwayatBounds();
   }
@@ -308,7 +368,7 @@ public class BelanjaGUI extends JFrame {
 
   }
 
-  private void setKerangjangBounds() {
+  private void setKeranjangBounds() {
     kp.setLayout(new BorderLayout(10, 10));
     kp.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
     JPanel pBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
@@ -341,7 +401,7 @@ public class BelanjaGUI extends JFrame {
 
   private void initComponents() {
     listMenu = new ArrayList<>();
-    listKeranjang=new ArrayList<>();
+    listKeranjang = new ArrayList<>();
     setListMenu();
     tab = new JTabbedPane();
     JPanel menuPanel = initMenuPanel();
@@ -434,40 +494,41 @@ public class BelanjaGUI extends JFrame {
       tModelMenu.addRow(new Object[] { i.getNama(), i.getKategori(), i.getHarga(), i.getStok() });
     }
   }
-  private void addCart(){
-    for (CartItem ci:listKeranjang){
-      tModelKeranjang.addRow(new Object[]{
-        ci.getItem().getNama(),
-        ci.getItem().getKategori(),
-        ci.getItem().getHarga(),
-        ci.getQuantity(),
-        ci.getItem().getHarga()*ci.getQuantity()
+
+  private void addCart() {
+    for (CartItem ci : listKeranjang) {
+      tModelKeranjang.addRow(new Object[] {
+          ci.getItem().getNama(),
+          ci.getItem().getKategori(),
+          ci.getItem().getHarga(),
+          ci.getQuantity(),
+          ci.getItem().getHarga() * ci.getQuantity()
       });
     }
   }
-  private void setListKeranjang(){
-    Path fileCart=Paths.get(CART_FILE_PATH); 
-    try{
-      List<String> lines=Files.readAllLines(fileCart);
-      for(String s:lines){
-        String[]line=s.split(",");
-        String id=line[0];
-        int qty=Integer.parseInt(line[1]);
-        for(Item i:listMenu){
-          if(i.getId().equals(id)){
+
+  private void setListKeranjang() {
+    Path fileCart = Paths.get(CART_FILE_PATH);
+    try {
+      List<String> lines = Files.readAllLines(fileCart);
+      for (String s : lines) {
+        String[] line = s.split(",");
+        String id = line[0];
+        int qty = Integer.parseInt(line[1]);
+        for (Item i : listMenu) {
+          if (i.getId().equals(id)) {
             listKeranjang.add(new CartItem(i, qty));
             break;
           }
         }
       }
       refreshTKeranjang();
-    }catch(Exception e){
+    } catch (Exception e) {
       JOptionPane.showMessageDialog(
-        this,
-        "Failed to load cart file",
-        "Error",
-        JOptionPane.ERROR_MESSAGE
-      );
+          this,
+          "Failed to load cart file",
+          "Error",
+          JOptionPane.ERROR_MESSAGE);
     }
   }
 }
