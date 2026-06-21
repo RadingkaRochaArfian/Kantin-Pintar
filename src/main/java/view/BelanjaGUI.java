@@ -3,10 +3,16 @@ package view;
 import java.nio.charset.StandardCharsets;
 //to do:  apply logic in daftar menu
 import java.nio.file.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.*;
+
+import controller.Exportable;
+import controller.StrukExporter;
 
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -24,6 +30,7 @@ public class BelanjaGUI extends JFrame {
   private final String MENU_FILE_PATH = "data/Menu.csv";
   private final String CART_FILE_PATH = "data/Cart.csv";
   private final String STRUCT_FILE_PATH = "data/Struct.txt";
+  private final String HISTORY_FILE_PATH = "data/History.csv";
   private JTabbedPane tab;
   private List<Item> listMenu;
   private List<CartItem> listKeranjang;
@@ -79,6 +86,107 @@ public class BelanjaGUI extends JFrame {
   private void setComponentsLogic() {
     setMenuLogic();
     setKeranjangLogic();
+    setTransaksiLogic();
+  }
+
+  private void setTransaksiLogic() {
+    tfInput.getDocument().addDocumentListener(new DocumentListener() {
+      public void changedUpdate(DocumentEvent e) {
+        updateLKembaliVal();
+      }
+
+      public void insertUpdate(DocumentEvent e) {
+        updateLKembaliVal();
+      }
+
+      public void removeUpdate(DocumentEvent e) {
+        updateLKembaliVal();
+      }
+    });
+    bBayar.addActionListener(e -> {
+      if (listKeranjang.isEmpty()) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Cart still empty!",
+            "Warning",
+            JOptionPane.WARNING_MESSAGE);
+        return;
+      }
+      String inputTest = tfInput.getText().trim();
+      if (inputTest.isEmpty()) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Please insert the valid nominal!",
+            "Warning",
+            JOptionPane.WARNING_MESSAGE);
+        return;
+      }
+      try {
+        double inputNominal = Double.parseDouble(tfInput.getText());
+        Transaksi tr = new Transaksi(listKeranjang);
+        tr.prosesPembayaran(inputNominal);
+        if (!tr.isBerhasil()) {
+          JOptionPane.showMessageDialog(
+              this,
+              "Insuffient payment!",
+              "Error",
+              JOptionPane.ERROR_MESSAGE);
+        }
+        Exportable strukGenerator = new StrukExporter(tr, this);
+        strukGenerator.exportToFile(STRUCT_FILE_PATH);
+        HistoryItem baru = new HistoryItem(tr.getTotalHarga(), tr.getTotalQuantity());
+        listRiwayat.add(baru);
+        updateHistoryFilePath();
+        tModelRiwayat.addRow(new Object[] {
+            baru.getWaktu(),
+            baru.getTotal(),
+            baru.getJumlahItem()
+        });
+        listKeranjang.clear();
+        refreshCartFilePath();
+        refreshTKeranjang();
+        tfInput.setText("");
+        lKembaliVal.setText("-");
+        JOptionPane.showMessageDialog(
+            this,
+            "Transaction successfull!\nStruct is saved in " + STRUCT_FILE_PATH,
+            "Success",
+            JOptionPane.INFORMATION_MESSAGE);
+      } catch (Exception ex) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Input nominal must be valid!",
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
+      }
+    });
+  }
+
+  private void updateLKembaliVal() {
+    try {
+      String test = tfInput.getText().trim();
+      if (test.isEmpty()) {
+        lKembaliVal.setText("-");
+        ;
+        return;
+      }
+      int input = Integer.parseInt(tfInput.getText().trim());
+      int total = 0;
+      for (CartItem ci : listKeranjang) {
+        total += ci.getItem().getHarga() * ci.getQuantity();
+      }
+      int kembalian = input - total;
+      DecimalFormatSymbols simbol = new DecimalFormatSymbols();
+      simbol.setGroupingSeparator('.');
+      DecimalFormat formatter = new DecimalFormat("#,###", simbol);
+      if (kembalian >= 0) {
+        lKembaliVal.setText(formatter.format(kembalian));
+      } else {
+        lKembaliVal.setText("-1");
+      }
+    } catch (NumberFormatException e) {
+      lKembaliVal.setText("-1");
+    }
   }
 
   private void setKeranjangLogic() {
@@ -244,6 +352,25 @@ public class BelanjaGUI extends JFrame {
     }
   }
 
+  private void updateHistoryFilePath() {
+    try {
+      HistoryItem baru = listRiwayat.get(listRiwayat.size() - 1);
+      List<String> lines = new ArrayList<>();
+      lines.add(baru.getWaktu() + "," + baru.getTotal() + "," + baru.getJumlahItem());
+      Files.write(
+          Paths.get(HISTORY_FILE_PATH),
+          lines,
+          StandardCharsets.UTF_8,
+          StandardOpenOption.APPEND);
+    } catch (Exception e) {
+      JOptionPane.showMessageDialog(
+          this,
+          "Failed to save history file.",
+          "Error",
+          JOptionPane.ERROR_MESSAGE);
+    }
+  }
+
   private void refreshMenuFilePath() {
     try {
       List<String> lines = new ArrayList<>();
@@ -402,6 +529,7 @@ public class BelanjaGUI extends JFrame {
   private void initComponents() {
     listMenu = new ArrayList<>();
     listKeranjang = new ArrayList<>();
+    listRiwayat = new ArrayList<>();
     setListMenu();
     tab = new JTabbedPane();
     JPanel menuPanel = initMenuPanel();
@@ -414,6 +542,7 @@ public class BelanjaGUI extends JFrame {
     tab.addTab("Riwayat", riwayatPanel);
     add(tab);
     setListKeranjang();
+    setListRiwayat();
   }
 
   private void setListMenu() {
@@ -443,6 +572,7 @@ public class BelanjaGUI extends JFrame {
     tModelRiwayat = new DefaultTableModel(new String[] { "Waktu", "Total (Rp)", "Jumlah Item" }, 0);
     tRiwayat = new JTable(tModelRiwayat);
     spRiwayat = new JScrollPane(tRiwayat);
+    addHistory();
     return rp;
   }
 
@@ -464,7 +594,7 @@ public class BelanjaGUI extends JFrame {
     bHapusItem = new JButton("Hapus Item");
     bKosongkan = new JButton("Kosongkan");
     tModelKeranjang = new DefaultTableModel(
-        new String[] { "Nama", "Kategori", "Harga Satuan", "Qty", "Subtotal" }, 0);
+        new String[] { "Nama", "Kategori", "Harga Satuan (Rp)", "Qty", "Subtotal (Rp)" }, 0);
     tKeranjang = new JTable(tModelKeranjang);
     spKeranjang = new JScrollPane(tKeranjang);
     addCart();
@@ -505,6 +635,42 @@ public class BelanjaGUI extends JFrame {
           ci.getItem().getHarga() * ci.getQuantity()
       });
     }
+  }
+
+  private void addHistory() {
+    for (HistoryItem hi : listRiwayat) {
+      tModelRiwayat.addRow(new Object[] {
+          hi.getWaktu(),
+          hi.getTotal(),
+          hi.getJumlahItem()
+      });
+    }
+  }
+
+  private void setListRiwayat() {
+    Path fileHistory = Paths.get(HISTORY_FILE_PATH);
+    try {
+      List<String> lines = Files.readAllLines(fileHistory);
+      for (String line : lines) {
+        String[] s = line.split(",");
+        String waktu = s[0];
+        String totalNominal = s[1];
+        String jumlahItem = s[2];
+        listRiwayat.add(new HistoryItem(waktu, totalNominal, jumlahItem));
+        refreshTRiwayat();
+      }
+    } catch (Exception e) {
+      JOptionPane.showMessageDialog(
+          this,
+          "Failed to load history file",
+          "Error",
+          JOptionPane.ERROR_MESSAGE);
+    }
+  }
+
+  private void refreshTRiwayat() {
+    tModelRiwayat.setRowCount(0);
+    addHistory();
   }
 
   private void setListKeranjang() {
