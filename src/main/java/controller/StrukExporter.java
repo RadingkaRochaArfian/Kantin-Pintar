@@ -44,7 +44,7 @@ public class StrukExporter implements Exportable {
             qty,
             formattedHarga));
       }
-      writer.write("----------------------------------\n");
+      writer.write("\n----------------------------------\n");
       writer.write(String.format(
           "%-10s: Rp%s\n%-10s: Rp%s\n%-10s: Rp%s\n",
           "TOTAL",

@@ -160,6 +160,9 @@ public class BelanjaGUI extends JFrame {
             JOptionPane.ERROR_MESSAGE);
       }
     });
+    bRefresh.addActionListener(e -> {
+      refreshTRiwayat();
+    });
   }
 
   private void updateLKembaliVal() {
