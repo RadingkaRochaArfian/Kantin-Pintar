@@ -80,8 +80,8 @@ Make sure the following components are installed on your device before running t
 │       │   ├── ☕ Minuman.class
 │       │   └── ☕ Transaksi.class
 │       └── 📁 view
-│           ├── ☕ 'BelanjaGUI$1.class'
-│           ├── ☕ 'BelanjaGUI$2.class'
+│           ├── ☕ BelanjaGUI$1.class
+│           ├── ☕ BelanjaGUI$2.class
 │           └── ☕ BelanjaGUI.class
 ├── 📁 build
 │   ├── 📁 classes
@@ -100,8 +100,8 @@ Make sure the following components are installed on your device before running t
 │   │           │   ├── ☕ Minuman.class
 │   │           │   └── ☕ Transaksi.class
 │   │           └── 📁 view
-│   │               ├── ☕ 'BelanjaGUI$1.class'
-│   │               ├── ☕ 'BelanjaGUI$2.class'
+│   │               ├── ☕ BelanjaGUI$1.class
+│   │               ├── ☕ BelanjaGUI$2.class
 │   │               └── ☕ BelanjaGUI.class
 │   ├── 📁 distributions
 │   │   ├── 📦 KantinPintar.tar
@@ -127,8 +127,8 @@ Make sure the following components are installed on your device before running t
 │       │   ├── 📁 compileTransaction
 │       │   │   ├── 📁 backup-dir
 │       │   │   └── 📁 stash-dir
-│       │   │       ├── 📄 'BelanjaGUI$1.class.uniqueId2'
-│       │   │       ├── 📄 'BelanjaGUI$2.class.uniqueId3'
+│       │   │       ├── 📄 BelanjaGUI$1.class.uniqueId2
+│       │   │       ├── 📄 BelanjaGUI$2.class.uniqueId3
 │       │   │       ├── 📄 BelanjaGUI.class.uniqueId1
 │       │   │       ├── 📄 KantinPintar.class.uniqueId0
 │       │   │       └── 📄 StrukExporter.class.uniqueId4
@@ -147,6 +147,8 @@ Make sure the following components are installed on your device before running t
 │       └── ⚙️ gradle-wrapper.properties
 ├── 📜 gradlew
 ├── 🪟 gradlew.bat
+├── 📄 KantinPintar.png
+├── 📄 KantinPintar.vpp
 ├── ⚖️ LICENSE
 ├── 📖 README.md
 ├── 🪟 Run.bat
@@ -169,6 +171,10 @@ Make sure the following components are installed on your device before running t
             └── 📁 view
                 └── ☕ BelanjaGUI.java
 ```
+
+## 📑 Class Diagram
+
+![image alt](https://github.com/RadingkaRochaArfian/Kantin-Pintar/blob/c85bca03b3e8392bb095ccda6e5b65f98ff7edd7/KantinPintar.png)
 
 ## 📝 License
 
